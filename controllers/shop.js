@@ -2,9 +2,8 @@ const Product = require('../models/product');
 const Cart = require('../models/cart');
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
-    .then(results => {
-      products = results[0];
+  Product.findAll()
+    .then(products => {
       res.render('shop/product-list', {
         pageTitle: 'All Products',
         prods: products,
@@ -18,10 +17,8 @@ exports.getProducts = (req, res, next) => {
 
 exports.getProduct = (req, res, next) => {
   const prodId = req.params.productId;
-  Product.findById(prodId)
-    .then(results => {
-      products = results[0];
-      product = products[0];
+  Product.findByPk(prodId)
+    .then(product => {
       res.render('shop/product-detail', {
         pageTitle: product.title,
         product: product,
@@ -31,12 +28,23 @@ exports.getProduct = (req, res, next) => {
     .catch(err => {
       console.log(err);
     })
+  // Alternative approach using .findAll() instead of .findPk()
+  // Product.findAll({ where: { id: prodId } })
+  //   .then(products => {
+  //     res.render('shop/product-detail', {
+  //       pageTitle: products[0].title,
+  //       product: products[0],
+  //       path: '/products'
+  //     });
+  //   })
+  //   .catch(err => {
+  //     console.log(err);
+  //   })
 };
 
 exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
-    .then(results => {
-      products = results[0];
+  Product.findAll()
+    .then(products => {
       res.render('shop/index', {
         pageTitle: 'Shop',
         prods: products,
