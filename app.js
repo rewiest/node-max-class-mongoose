@@ -9,6 +9,8 @@ const Product = require('./models/product');
 const User = require('./models/user');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
+const Order = require('./models/order');
+const OrderItem = require('./models/order-item');
 
 const app = express();
 
@@ -44,8 +46,12 @@ User.hasOne(Cart);
 Cart.belongsTo(User);
 Cart.belongsToMany(Product, { through: CartItem });
 Product.belongsToMany(Cart, { through: CartItem });
+Order.belongsTo(User);
+User.hasMany(Order);
+Order.belongsToMany(Product, { through: OrderItem });
 
 sequelize
+  // use .sync force to reinitialize the tables and
   // .sync({ force: true })
   .sync()
   .then((result) => {
@@ -56,8 +62,8 @@ sequelize
     if (!user) {
       return User.create({ name: 'Ralph', email: 'rewiest@us.ibm.com' });
     }
-    return Promise.resolve(user);
-    // note that adding 'Promise.resolve()' is optional here because
+    return user;
+    // note that adding 'Promise.resolve(user)' is optional here because
     // when you return a value in a .then() block it is automatically wrapped into a Promise
   })
   .then(user => {
