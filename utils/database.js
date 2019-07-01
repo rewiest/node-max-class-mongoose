@@ -6,11 +6,14 @@ let db;
 // method for connecting and storing (keeping alive) connection
 // MongoDB will automatically handle the pooling of connections for simultaneous needs
 const mongoConnect = callback => {
-  MongoClient.connect('mongodb+srv://lioncrazed:wrpnst1!@cluster0-ef34a.mongodb.net/shop?retryWrites=true&w=majority')
+  MongoClient.connect(
+    'mongodb+srv://lioncrazed:wrpnst1!@cluster0-ef34a.mongodb.net/shop?retryWrites=true&w=majority', 
+    { useNewUrlParser: true }
+  )
   .then(client => {
     console.log('Database Connected!');
     db = client.db();
-    callback();
+  callback();
   })
   .catch(err => {
     console.log(err);
