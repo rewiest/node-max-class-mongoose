@@ -56,7 +56,8 @@ exports.getEditProduct = (req, res, next) => {
 
 exports.postEditProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findById(prodId)
+  Product
+    .findById(prodId)
     .then(product => {
       product.title = req.body.title;
       product.price = req.body.price;
@@ -75,7 +76,8 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.find()
+  Product
+    .find()
     .select('title price imageUrl description')   // select the fields to retrieve (no commas between fields), default is all fields
     .populate('userId', 'name email')     // also populates the nested User info for the ref userId, second parameter string tells which fields, default is all fields
     .then(products => {
@@ -92,7 +94,8 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.findByIdAndRemove(prodId)
+  Product
+    .findByIdAndRemove(prodId)
     .then(result => {
       console.log('Product Deleted!');
       res.redirect('/admin/products');
