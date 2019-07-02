@@ -9,14 +9,16 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const product = new Product(
-    req.body.title,
-    req.body.price,
-    req.body.description,
-    req.body.imageUrl,
-    null,
-    req.user._id
-  );
+  const title = req.body.title;
+  const price = req.body.price;
+  const description = req.body.description;
+  const imageUrl = req.body.imageUrl;
+  const product = new Product({
+    title: title,
+    price: price,
+    description: description,
+    imageUrl: imageUrl
+  });
   product
     .save()
     .then(result => {
@@ -56,15 +58,16 @@ exports.getEditProduct = (req, res, next) => {
 };
 
 exports.postEditProduct = (req, res, next) => {
-  const product = new Product(
-    req.body.title,
-    req.body.price,
-    req.body.description,
-    req.body.imageUrl,
-    req.body.productId
-  );
-  product
-    .save()
+  const prodId = req.body.productId;
+  Product.findById(prodId)
+    .then(product => {
+      product.title = req.body.title;
+      product.price = req.body.price;
+      product.description = req.body.description;
+      product.imageUrl = req.body.imageUrl;
+      return product
+        .save()
+    })
     .then(result => {
       console.log('Product Updated!');
       res.redirect('/admin/products');
@@ -75,7 +78,7 @@ exports.postEditProduct = (req, res, next) => {
 };
 
 exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then(products => {
       res.render('admin/products', {
         pageTitle: 'Admin Products',
@@ -90,7 +93,7 @@ exports.getProducts = (req, res, next) => {
 
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
-  Product.deleteById(prodId)
+  Product.findByIdAndRemove(prodId)
     .then(result => {
       console.log('Product Deleted!');
       res.redirect('/admin/products');
