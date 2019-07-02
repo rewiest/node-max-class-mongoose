@@ -19,21 +19,16 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use((req, res, next) => {
-//   User.findById('5d1a733fa29b7af2b3cfff51')
-//     .then(user => {
-//       req.user = new User(
-//         user.name,
-//         user.email,
-//         user.cart,
-//         user._id
-//       );
-//       next();
-//     })
-//     .catch(err => {
-//       console.log(err);
-//     });
-// });
+app.use((req, res, next) => {
+  User.findById('5d1b6b28be1a530731249d57')
+    .then(user => {
+      req.user = user;
+      next();
+    })
+    .catch(err => {
+      console.log(err);
+    });
+});
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -45,6 +40,19 @@ mongoose.connect(
   { useNewUrlParser: true }
 )
   .then(result => {
+    User.findOne()
+      .then(user => {
+        if (!user) {
+          const user = new User({
+            name: 'Ralph',
+            email: 'rewiest@us.ibm.com',
+            cart: {
+              items: []
+            }
+          });
+          user.save();
+        }
+      })
     app.listen(3000);
   })
   .catch(err => {
