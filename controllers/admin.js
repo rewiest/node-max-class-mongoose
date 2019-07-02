@@ -9,15 +9,12 @@ exports.getAddProduct = (req, res, next) => {
 };
 
 exports.postAddProduct = (req, res, next) => {
-  const title = req.body.title;
-  const price = req.body.price;
-  const description = req.body.description;
-  const imageUrl = req.body.imageUrl;
   const product = new Product({
-    title: title,
-    price: price,
-    description: description,
-    imageUrl: imageUrl
+    title: req.body.title,
+    price: req.body.price,
+    description: req.body.description,
+    imageUrl: req.body.imageUrl,
+    userId: req.user._id
   });
   product
     .save()
@@ -79,6 +76,8 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product.find()
+    .select('title price imageUrl description')   // select the fields to retrieve (no commas between fields), default is all fields
+    .populate('userId', 'name email')     // also populates the nested User info for the ref userId, second parameter string tells which fields, default is all fields
     .then(products => {
       res.render('admin/products', {
         pageTitle: 'Admin Products',
