@@ -9,7 +9,7 @@ exports.getProducts = (req, res, next) => {
         pageTitle: 'All Products',
         prods: products,
         path: '/products',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -26,7 +26,7 @@ exports.getProduct = (req, res, next) => {
         pageTitle: product.title,
         product: product,
         path: '/products',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -42,7 +42,7 @@ exports.getIndex = (req, res, next) => {
         pageTitle: 'Shop',
         prods: products,
         path: '/',
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -60,7 +60,7 @@ exports.getCart = (req, res, next) => {
         pageTitle: 'Your Cart',
         path: '/cart',
         products: products,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
@@ -106,7 +106,7 @@ exports.postOrder = (req, res, next) => {
       const order = new Order({
         user: {
           name: req.user.name,
-          userId: req.user._id
+          userId: req.user
         },
         products: products
       });
@@ -125,13 +125,13 @@ exports.postOrder = (req, res, next) => {
 
 exports.getOrders = (req, res, next) => {
   Order
-    .find({ 'user.userId': req.user._id })
+    .find({ 'user.userId': req.user })
     .then(orders => {
       res.render('shop/orders', {
         pageTitle: 'Your Orders',
         path: '/orders',
         orders: orders,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
       });
     })
     .catch(err => {
