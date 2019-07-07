@@ -29,3 +29,12 @@ exports.postSignup = [
       return true;
     })  
 ];
+
+exports.postLogin = [
+  check('email')
+    .isEmail()
+    .withMessage('Please enter a valid email.'),
+  check('password', 'Please enter a valid password.')
+    .isLength({ min: 4 })
+    .isAlphanumeric() 
+];
