@@ -23,7 +23,9 @@ exports.getLogin = (req, res, next) => {
   res.render('auth/login', {
     pageTitle: 'Login',
     path: '/login',
-    errorMessage: message
+    errorMessage: message,
+    inputData: { email: '', password: '' },
+    validationErrors: []
   });
 };
 
@@ -38,7 +40,8 @@ exports.getSignup = (req, res, next) => {
     pageTitle: 'Signup',
     path: '/signup',
     errorMessage: message,
-    inputData: { email: '', password: '', confirmPassword: '' }
+    inputData: { email: '', password: '', confirmPassword: '' },
+    validationErrors: []
   });
 };
 
@@ -50,15 +53,22 @@ exports.postLogin = (req, res, next) => {
     return res.status(422).render('auth/login', {
       pageTitle: 'Login',
       path: '/login',
-      errorMessage: errors.array()[0].msg
+      errorMessage: errors.array()[0].msg,
+      inputData: { email: email, password: password },
+      validationErrors: errors.array()
     });
   }
   User
     .findOne({email: email})
     .then(user => {
       if (!user) {
-        req.flash('error', 'Invalid email or password.');
-        return res.redirect('/login');
+        return res.status(422).render('auth/login', {
+          pageTitle: 'Login',
+          path: '/login',
+          errorMessage: 'Invalid email or password.',
+          inputData: { email: email, password: password },
+          validationErrors: []
+        });
       } 
       bcrypt
         .compare(password, user.password)
@@ -73,8 +83,13 @@ exports.postLogin = (req, res, next) => {
               res.redirect('/');
             });
           }
-          req.flash('error', 'Invalid email or password.');
-          res.redirect('/login');
+          return res.status(422).render('auth/login', {
+            pageTitle: 'Login',
+            path: '/login',
+            errorMessage: 'Invalid email or password.',
+            inputData: { email: email, password: password },
+            validationErrors: []
+          });
         })
         .catch(err => {
           console.log(err);
@@ -96,7 +111,8 @@ exports.postSignup = (req, res, next) => {
       pageTitle: 'Signup',
       path: '/signup',
       errorMessage: errors.array()[0].msg,
-      inputData: { email: email, password: password, confirmPassword: confirmPassword }
+      inputData: { email: email, password: password, confirmPassword: confirmPassword },
+      validationErrors: errors.array()
     });
   }
   User
