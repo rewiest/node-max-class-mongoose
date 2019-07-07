@@ -59,16 +59,19 @@ exports.postEditProduct = (req, res, next) => {
   Product
     .findById(prodId)
     .then(product => {
+      if (product.userId.toString() !== req.user._id.toString()) {
+        return res.redirect('/');
+      }
       product.title = req.body.title;
       product.price = req.body.price;
       product.description = req.body.description;
       product.imageUrl = req.body.imageUrl;
       return product
         .save()
-    })
-    .then(result => {
-      console.log('Product Updated!');
-      res.redirect('/admin/products');
+        .then(result => {
+          console.log('Product Updated!');
+          res.redirect('/admin/products');
+        })
     })
     .catch(err => {
       console.log(err);
@@ -77,7 +80,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
   Product
-    .find()
+    .find({ userId: req.user._id })
     .select('title price imageUrl description')   // select the fields to retrieve (no commas between fields), default is all fields
     .populate('userId', 'name email')     // also populates the nested User info for the ref userId, second parameter string tells which fields, default is all fields
     .then(products => {
@@ -95,7 +98,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
   const prodId = req.body.productId;
   Product
-    .findByIdAndRemove(prodId)
+    .deleteOne({ _id: prodId, userId: req.user._id })
     .then(result => {
       console.log('Product Deleted!');
       res.redirect('/admin/products');
