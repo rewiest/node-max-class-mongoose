@@ -2,6 +2,16 @@ const { check } = require('express-validator');
 
 const User = require('../models/user');
 
+exports.postLogin = [
+  check('email')
+    .isEmail()
+    .withMessage('Please enter a valid email.')
+    .normalizeEmail(),
+  check('password', 'Please enter a valid password.')
+    .isLength({ min: 4 })
+    .isAlphanumeric() 
+];
+
 exports.postSignup = [
   check('email')
     .isEmail()
@@ -17,7 +27,8 @@ exports.postSignup = [
             return Promise.reject('E-mail already exists.');
           }
         });
-    }),
+    })
+    .normalizeEmail(),
   check('password', 'Please enter a valid password.')
     .isLength({ min: 4 })
     .isAlphanumeric(),
@@ -28,13 +39,4 @@ exports.postSignup = [
       }
       return true;
     })  
-];
-
-exports.postLogin = [
-  check('email')
-    .isEmail()
-    .withMessage('Please enter a valid email.'),
-  check('password', 'Please enter a valid password.')
-    .isLength({ min: 4 })
-    .isAlphanumeric() 
 ];
