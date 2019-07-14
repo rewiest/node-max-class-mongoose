@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+const stripe = require('stripe')('sk_test_CsTXTIOutyaftk5dfxGkHRW700O9HEbS5O');
 
 const Product = require('../models/product');
 const Order = require('../models/order');
@@ -141,11 +142,42 @@ exports.postCartDeleteProduct = (req, res, next) => {
     });
 };
 
+exports.getCheckout = (req, res, next) => {
+  req.user
+    .populate('cart.items.productId')   // populate() does not return a promise
+    .execPopulate()                     // so need to chain execPopulate() to create a promise 
+    .then(user => {
+      const products = user.cart.items;
+      let total = 0;
+      products.forEach(p => {
+        total += p.quantity * p.productId.price;
+      });
+      let stripeTotal = Math.round(total * 100);
+      res.render('shop/checkout', {
+        path: '/checkout',
+        pageTitle: 'Checkout',
+        products: products,
+        totalSum: total,
+        stripeTotal: stripeTotal
+      });
+    })
+    .catch(err => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
+    });
+};
+
 exports.postOrder = (req, res, next) => {
+  const token = req.body.stripeToken;
+  let totalSum = 0;
   req.user
     .populate('cart.items.productId')
     .execPopulate()
     .then(user => {
+      user.cart.items.forEach(p => {
+        totalSum += p.quantity * p.productId.price;
+      });
       const products = user.cart.items.map(i => {
         return { quantity: i.quantity, product: { ...i.productId._doc } }
       });
@@ -159,6 +191,14 @@ exports.postOrder = (req, res, next) => {
       return order.save();
     })
     .then(result => {
+      totalSum = Math.round(totalSum * 100);
+      const charge = stripe.charges.create({
+        amount: totalSum,
+        currency: 'usd',
+        description: 'Demo Order',
+        source: token,
+        metadata: { order_id: result._id.toString() }
+      });
       return req.user.clearCart();
     })
     .then(() => {
@@ -169,7 +209,7 @@ exports.postOrder = (req, res, next) => {
       error.httpStatusCode = 500;
       return next(error);
     });
-}
+};
 
 exports.getOrders = (req, res, next) => {
   Order
@@ -250,4 +290,4 @@ exports.getInvoice = (req, res, next) => {
       next(err);
     });
   
-}
+};

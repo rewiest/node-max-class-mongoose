@@ -10,6 +10,8 @@ const flash = require('connect-flash');
 const multer = require('multer');
 
 const errorController = require('./controllers/error');
+const shopController = require('./controllers/shop');
+const isAuth = require('./middleware/is-auth');
 const User = require('./models/user');
 
 const MONGODB_URI = 'mongodb+srv://lioncrazed:wrpnst1!@cluster0-ef34a.mongodb.net/shop?retryWrites=true&w=majority'
@@ -66,14 +68,12 @@ app.use(session({
   store: store
 }));
 
-// enable csrf token protection and to flash store messages in response 
-app.use(csrfProtection);
+// enable flash store messages in response 
 app.use(flash());
 
-// add session login status and csrf token to response
+// add session login status to response
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
-  res.locals.csrfToken = req.csrfToken();
   next();
 });
 
@@ -95,7 +95,17 @@ app.use((req, res, next) => {
   });
 });
 
-// enable routes with actual routes in corresponding router files
+// enale routes (non-csrf protected) with actual routes in corresponding router files
+app.post('/create-order', isAuth, shopController.postOrder);
+
+// enable csrf token protection for the routes that follow and add csrf token to response
+app.use(csrfProtection);
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// enable routes (csrf-protected) with actual routes in corresponding router files
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
